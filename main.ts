@@ -30,15 +30,15 @@ export default class MyPlugin extends Plugin {
     })
 
     this.registerEvent(
-      this.app.workspace.on('active-leaf-change', () =>
-        this.onActiveLeafChange(),
-      ),
+      // TODO: not working when using the file provided by the event
+      this.app.workspace.on('file-open', (file) => this.onFileChange(file)),
     )
   }
 
-  onActiveLeafChange() {
+  onFileChange(file: TFile | null) {
     pipe(
-      this.getGrothFromCache(),
+      file,
+      this.getGrothFromCache,
       O.match(
         () => this.clearStatus(),
         (growth) => this.setStatus(growth),
@@ -52,9 +52,9 @@ export default class MyPlugin extends Plugin {
     return view?.file ?? null
   }
 
-  getGrothFromCache() {
+  getGrothFromCache(file: TFile | null) {
     return pipe(
-      this.getCurrentMdFile(),
+      file ?? this.getCurrentMdFile(),
       O.fromNullable,
       O.mapNullable((file) => this.app.metadataCache.getFileCache(file)),
       O.mapNullable((meta) => meta.frontmatter?.growth),
